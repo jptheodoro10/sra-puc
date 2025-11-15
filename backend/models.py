@@ -12,8 +12,10 @@ class Aluno(Base):
     __tablename__ = 'alunos'
     
     id_aluno = Column(Integer, primary_key=True)
+    matricula = Column(String(50), nullable=False, unique=True, index=True)
     nome = Column(String(100), nullable=False)
-    email = Column(String(100), nullable=False, unique=True)
+    hashed_password = Column(String(255), nullable=False) 
+    
     
     # Relacionamento 1-para-1 com PerfilPreferencias
     perfil_preferencias = relationship('PerfilPreferencias', back_populates='aluno', uselist=False, cascade="all, delete-orphan")

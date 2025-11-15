@@ -19,7 +19,6 @@ const Login = () => {
   const [form, setForm] = useState({
     matricula: "",
     senha: "",
-    tipo: "aluno",
   });
 
   const navigate = useNavigate();
@@ -40,18 +39,14 @@ const Login = () => {
     try {
       // --- 2. Chame sua API do FastAPI ---
       // (Substitua pela URL e lógica da sua API real)
-      const response = await fetch(
-        "http://localhost:8000/seu-endpoint-de-login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            matricula: form.matricula,
-            senha: form.senha,
-            tipo: form.tipo,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matricula: form.matricula,
+          senha: form.senha,
+        }),
+      });
 
       if (!response.ok) {
         // Se o login falhar (ex: 401 Senha errada)
