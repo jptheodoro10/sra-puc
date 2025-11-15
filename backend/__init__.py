@@ -1,21 +1,20 @@
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal, Base
-import models # Importa o módulo models.py inteiro
-import auth   # <--- PRECISA IMPORTAR O AUTH
+import models 
+import auth   
 
 def seed_data(db: Session):
     """
-    Popula o banco de dados com dados iniciais essenciais
-    (Tipos de Preferência, Opções) e dados de simulação.
+    Popula o banco de dados com metadados (dados inciias essenciais) e alguns dados de simulação.
     """
     
-    # --- 1. VERIFICAÇÃO (Sem mudanças) ---
+    #  verificar se metadados ja existem:
     if db.query(models.TipoPreferencia).first() is not None:
-        print("Dados de metadados (Tipos/Opções) já existem. Pulando o seeding.")
+        print("Metadados (Tipos/Opções) já existem. Pulando o seeding.")
     else:
         print("Populando Tipos e Opções de Preferência...")
         
-        # --- 2. POPULAR METADADOS ESSENCIAIS (Sem mudanças) ---
+        # popular metdados:
         tipo_ensino = models.TipoPreferencia(nome="Forma de Lecionar")
         tipo_avaliacao = models.TipoPreferencia(nome="Método Avaliativo")
         tipo_ritmo = models.TipoPreferencia(nome="Ritmo da Aula")
@@ -33,7 +32,7 @@ def seed_data(db: Session):
         db.commit()
         print("Metadados populados.")
         
-    # --- 3. POPULAR DADOS DE SIMULAÇÃO (Corrigido) ---
+    # dados de simulacao:
     if db.query(models.Aluno).first() is not None:
         print("Dados de simulação (Alunos/Professores) já existem. Pulando.")
     else:
@@ -46,28 +45,28 @@ def seed_data(db: Session):
         turma_adriano = models.Turma(nome_turma="3WA", semestre="2025.1", professor=prof_adriano, disciplina=disc_bd)
         turma_carla = models.Turma(nome_turma="3WB", semestre="2025.1", professor=prof_carla, disciplina=disc_bd)
         
-        # --- CORREÇÃO AQUI ---
-        # Criar hash de senha para simulação (ex: "puc123")
+        
+        # criar hash de senha para simulação (ex: "puc123")
         sim_password_hash = auth.get_password_hash("puc123")
 
-        # Alunos (COM MATRÍCULA E SENHA, SEM EMAIL)
+        # alunos (todos com a senha simulada 'hashaeada')
         aluno_joao = models.Aluno(
             nome="João Silva", 
-            matricula="2110001",                   # <--- CORREÇÃO
-            hashed_password=sim_password_hash      # <--- CORREÇÃO
+            matricula="2110001",                   
+            hashed_password=sim_password_hash      
         )
         aluno_maria = models.Aluno(
             nome="Maria Souza", 
-            matricula="2110002",                   # <--- CORREÇÃO
-            hashed_password=sim_password_hash      # <--- CORREÇÃO
+            matricula="2110002",                 
+            hashed_password=sim_password_hash      
         )
         aluno_pedro = models.Aluno(
             nome="Pedro Costa", 
-            matricula="2110003",                   # <--- CORREÇÃO
-            hashed_password=sim_password_hash      # <--- CORREÇÃO
+            matricula="2110003",                   
+            hashed_password=sim_password_hash      
         )
         
-        # Avaliações (Sem mudanças)
+        # avaliações 
         aval1_adriano = models.Avaliacao(aluno=aluno_maria, turma=turma_adriano, semestre="2025.1", slide=7, quadro=2, velocidade_aula=6, provas=4, trabalhos=5, projetos=5, interacao=5)
         aval2_adriano = models.Avaliacao(aluno=aluno_pedro, turma=turma_adriano, semestre="2025.1", slide=6, quadro=3, velocidade_aula=7, provas=5, trabalhos=5, projetos=5, interacao=6)
         aval1_carla = models.Avaliacao(aluno=aluno_maria, turma=turma_carla, semestre="2025.1", slide=2, quadro=7, velocidade_aula=4, provas=6, trabalhos=5, projetos=5, interacao=7)
@@ -85,10 +84,10 @@ def seed_data(db: Session):
 
 def init_database():
     print("Iniciando a criação do banco de dados...")
-    # Limpa o banco (ótimo para desenvolvimento)
+    # limpa o banco 
     Base.metadata.drop_all(bind=engine) 
     
-    # Cria todas as tabelas (com as novas colunas)
+    # cria todas as tabelas 
     try:
         Base.metadata.create_all(bind=engine)
         print("Tabelas criadas com sucesso.")
@@ -96,7 +95,7 @@ def init_database():
         print(f"Erro ao criar tabelas: {e}")
         return
 
-    # Popula os dados
+    # popula os dados
     db = SessionLocal()
     try:
         seed_data(db)

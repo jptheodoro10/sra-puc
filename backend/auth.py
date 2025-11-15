@@ -67,8 +67,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 async def get_current_aluno(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     """
-    Esta é a dependência "guarda-costas".
-    Qualquer rota que precisar dela vai:
+    Qualquer rota que precisar desta dependecia vai ter que:
     1. Exigir um Token no Header.
     2. Decodificar o Token.
     3. Retornar o objeto 'Aluno' do banco.
