@@ -33,14 +33,43 @@ const ProfileForm = (props) => {
 
   const isFormValid = Object.values(form).every((value) => value !== "");
 
-  const handleSubmit = () => {
-    console.log(form);
-    alert("Perfil salvo com sucesso!");
+  const handleSubmit = async () => {
+    if (!isFormValid) return;
+
+    try {
+      // 1. Pegar o token do localStorage
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("Usuário não autenticado. Faça login novamente.");
+      }
+
+      const response = await fetch("http://localhost:8000/aluno/me/perfil", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // adiciona o token de autorização
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || "Erro ao salvar perfil.");
+      }
+
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Erro ao salvar perfil:", err);
+      setError(err.message || "Ocorreu um erro. Tente novamente.");
+    }
   };
 
   // largura fixa padrão para selects
   const selectWidth = { width: 180, minWidth: 180, maxWidth: 180 };
   const selectSmallWidth = { width: 80, minWidth: 80, maxWidth: 80 };
+
+  const userName = localStorage.getItem("userName") || "Usuario";
 
   return (
     <Box
@@ -87,7 +116,7 @@ const ProfileForm = (props) => {
                     fontSize: { xs: "1.4rem", md: "1.6rem", xl: "2.0rem" },
                   }}
                 >
-                  Olá, {props.name}! Crie seu perfil!
+                  Olá, {userName}! Crie seu perfil!
                 </Typography>
               </Grid>
             </Grid>

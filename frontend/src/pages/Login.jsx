@@ -19,6 +19,7 @@ const Login = () => {
   const [form, setForm] = useState({
     matricula: "",
     senha: "",
+    tipo: "aluno", // nosso mvp so contempla alunos
   });
 
   const navigate = useNavigate();
@@ -28,14 +29,13 @@ const Login = () => {
   };
 
   const isValid =
-    form.matricula.trim().length > 0 &&
-    form.senha.trim().length > 0 &&
-    ["aluno", "professor", "funcionario"].includes(form.tipo);
+    form.matricula.trim().length > 0 && form.senha.trim().length > 0;
 
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!isValid) return;
     setLoginError("");
+
     try {
       // --- 2. Chame sua API do FastAPI ---
       // (Substitua pela URL e lógica da sua API real)
@@ -55,15 +55,22 @@ const Login = () => {
 
       // --- 3. Pegue os dados do usuário da resposta ---
       const userData = await response.json();
+      console.log("Resposta do backend:", userData);
       // Ex: userData pode ser { id: 1, nome: "Fulano de Tal", ... }
-
-      const nomeDoUsuario = userData.nome; // <-- Pegue o nome que veio do banco!
+      localStorage.setItem("authToken", userData.access_token);
+      const nomeDoUsuario = userData.nome;
+      localStorage.setItem("userName", userData.nome);
 
       // --- 4. Navegue programaticamente com o nome ---
       // (Assumindo que sua rota é /TelaInicial/:name)
       // (Se sua rota mudou para /Preferencias/:name, apenas ajuste)
 
-      navigate(`/TelaInicial/${nomeDoUsuario}`);
+      if (userData.has_profile === false) {
+        navigate("/Preferencias");
+      } else {
+        // Se ele JÁ tem perfil, vai direto para o dashboard
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Erro no login:", error);
       setLoginError(error.message || "Falha ao tentar login.");

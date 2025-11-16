@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import Login from "./pages/Login.jsx";
 import TelaInicial from "./pages/TelaInicial.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
+//import TelaPrincipal from "./pages/TelaPrincipal.jsx";
 
 const router = createBrowserRouter([
   {

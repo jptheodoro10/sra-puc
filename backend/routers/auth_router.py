@@ -20,4 +20,8 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
         data={"sub": aluno.matricula, "aluno_id": aluno.id_aluno},
     )
 
-    return {"access_token": token, "token_type": "bearer"}
+    has_profile = bool(aluno.perfil_preferencias)
+
+
+
+    return {"access_token": token, "token_type": "bearer", "has_profile": has_profile, "nome": aluno.nome}
