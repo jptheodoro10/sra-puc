@@ -29,7 +29,7 @@ def get_opcoes_dict(db: Session) -> dict[str, int]:
     return {op.coluna_mapeada: op.id_opcao for op in opcoes}
 
 
-# --- FUNÇÃO NOVA ---
+
 def create_or_update_aluno_perfil(
     db: Session, 
     aluno: models.Aluno, 
@@ -45,80 +45,75 @@ def create_or_update_aluno_perfil(
     if not aluno.perfil_preferencias:
         perfil_db = models.PerfilPreferencias(aluno=aluno)
         db.add(perfil_db)
-        # db.commit() # Depende se você quer commitar aqui ou no final
-        db.flush() # 'flush' atribui o ID sem commitar
+     
+        db.flush() # atribui o ID sem commitar
     else:
         perfil_db = aluno.perfil_preferencias
-        # Limpa as preferências antigas para recriá-las
+        # limpa as preferências antigas para recriá-las
         db.query(models.PreferenciaAluno)\
           .filter_by(perfil_id=perfil_db.id_perfil).delete()
 
-    # 2. O VETOR "TRADUZIDO" (A Lógica de Negócio)
+    # 2. O VETOR "TRADUZIDO" 
     # Este dicionário conterá o vetor final (ex: {'slide': 1, 'quadro': 7, ...})
     vetor_final = {}
 
-    # --- REGRA DE TRADUÇÃO 1: Metodologia (formaLecionar) ---
-    # Hipótese: 'Teórica' = slide, 'Prática' = quadro, 'Mista' = ambos
-    peso_metodologia = perfil_data.formaLecionarImportancia
+    #  Metodologia (formaLecionar) 
+
+    imp = perfil_data.formaLecionarImportancia
+
+    vetor_final["slide"] = 0
+    vetor_final["quadro"] = 0
+
     if perfil_data.formaLecionar == "Teórica":
-        vetor_final['slide'] = peso_metodologia
-        vetor_final['quadro'] = 1 # Valor mínimo
+        vetor_final["slide"] = imp
     elif perfil_data.formaLecionar == "Prática":
-        vetor_final['slide'] = 1 # Valor mínimo
-        vetor_final['quadro'] = peso_metodologia
-    elif perfil_data.formaLecionar == "Mista":
-        vetor_final['slide'] = peso_metodologia
-        vetor_final['quadro'] = peso_metodologia
+        vetor_final["quadro"] = imp
 
-    # --- REGRA DE TRADUÇÃO 2: Avaliação (formaAvaliar) ---
-    # Hipótese: O valor selecionado recebe o peso, os outros recebem 1
-    peso_avaliacao = perfil_data.formaAvaliarImportancia
-    vetor_final['provas'] = 1
-    vetor_final['trabalhos'] = 1
-    vetor_final['projetos'] = 1
-    
+    # =============== 2. Forma de avaliação ==========================
+    imp = perfil_data.formaAvaliarImportancia
+
+    vetor_final["provas"] = 0
+    vetor_final["trabalhos"] = 0
+    vetor_final["projetos"] = 0
+
     if perfil_data.formaAvaliar == "Provas":
-        vetor_final['provas'] = peso_avaliacao
+        vetor_final["provas"] = imp
     elif perfil_data.formaAvaliar == "Trabalhos":
-        vetor_final['trabalhos'] = peso_avaliacao
+        vetor_final["trabalhos"] = imp
     elif perfil_data.formaAvaliar == "Projetos":
-        vetor_final['projetos'] = peso_avaliacao
-        
-    # --- REGRA DE TRADUÇÃO 3: Ritmo (ritmoAula) ---
-    # Hipótese: Ignoramos 'Lento/Rápido' e usamos a 'Importancia' como o peso
-    # para a 'velocidade_aula'.
-    vetor_final['velocidade_aula'] = perfil_data.ritmoAulaImportancia
-    
-    # --- REGRA DE TRADUÇÃO 4: Incentivo (incentivo) ---
-    # Hipótese: Usamos a 'Importancia' como o peso para 'interacao'.
-    vetor_final['interacao'] = perfil_data.incentivoImportancia
+        vetor_final["projetos"] = imp
 
-    # 3. SALVAR O VETOR NO BANCO
-    # Agora, converte o `vetor_final` em linhas `PreferenciaAluno`
-    
-    preferencias_para_salvar = []
-    for coluna, peso in vetor_final.items():
-        if coluna in opcoes_map: # Garante que a coluna existe
-            preferencias_para_salvar.append(
+    # 3. Ritmo da Aula 
+    imp = perfil_data.ritmoAulaImportancia
+
+    vetor_final["velocidade_aula"] = imp 
+    #  4. Partipacao em aula 
+    imp = perfil_data.incentivoImportancia
+
+    vetor_final["interacao"] = imp
+    # 3. SALVAR NO BANCO
+    preferencias = []
+    for nome, peso in vetor_final.items():
+        if nome in opcoes_map:
+            preferencias.append(
                 models.PreferenciaAluno(
                     perfil_id=perfil_db.id_perfil,
-                    opcao_id=opcoes_map[coluna],
+                    opcao_id=opcoes_map[nome],
                     peso=peso
                 )
             )
 
-    if preferencias_para_salvar:
-        db.add_all(preferencias_para_salvar)
-    
+    if preferencias:
+        db.add_all(preferencias)
+
     db.commit()
-    db.refresh(perfil_db) # Recarrega o perfil com as novas preferências
+    db.refresh(perfil_db)
+
     return perfil_db
 
 
-# --- FUNÇÕES NOVAS (Para Rota de Recomendação) ---
 
 # Esta lista define o "espaço vetorial" da comparação
-# Deve ser idêntica à da sua rota de recomendação
 FEATURE_NAMES = [
     'slide', 'quadro', 'velocidade_aula',
     'provas', 'trabalhos', 'projetos', 'interacao'
@@ -137,29 +132,27 @@ def get_perfil_completo_by_aluno_id(db: Session, aluno_id: int):
                  .joinedload(models.PreferenciaAluno.opcao)
              ).first()
 
-def get_all_professores_avg_ratings(db: Session):
-    """
-    Calcula a média de avaliação de TODOS os professores em todas as
-    categorias (features) e retorna uma lista de resultados.
-    Essencial para construir os "vetores dos professores".
-    """
-    
-    # Cria dinamicamente as colunas de média (ex: AVG(slide) AS avg_slide)
+def get_disciplinas(db: Session):
+    """Retorna todas as disciplinas cadastradas."""
+    return db.query(models.Disciplina).all()
+
+
+def get_professores_avg_ratings_by_disciplina(db: Session, disciplina_id: int):
     avg_cols = [
         func.avg(getattr(models.Avaliacao, col)).label(f"avg_{col}")
         for col in FEATURE_NAMES
     ]
     
-    # Executa a query que junta Professor -> Turma -> Avaliacao
-    # e agrupa por professor para calcular as médias.
     return db.query(
         models.Professor.id_professor,
         models.Professor.nome,
-        *avg_cols # Desempacota as colunas (AVG(slide), AVG(quadro), ...)
+        *avg_cols 
     ).join(
         models.Turma, models.Professor.id_professor == models.Turma.professor_id
     ).join(
         models.Avaliacao, models.Turma.id_turma == models.Avaliacao.turma_id
+    ).filter( # --- FILTRO ADICIONADO ---
+        models.Turma.disciplina_id == disciplina_id
     ).group_by(
         models.Professor.id_professor, models.Professor.nome
     ).all()

@@ -71,20 +71,26 @@ def salvar_perfil_aluno(
             status_code=500, 
             detail=f"Erro ao salvar perfil: {e}"
         )
+
+
+@router.get("/disciplinas", response_model=list[schemas.Disciplina])
+def get_all_disciplinas(db: Session = Depends(get_db)):
+   # pra mostrar no frontend
+    return crud.get_disciplinas(db)
     
     
 @router.get("/recomendacoes", response_model=list[schemas.ProfessorComSimilaridade])
 def get_recomendacoes(
+    disciplina_id: int, # disciplina por query paramater
     db: Session = Depends(get_db),
-    current_aluno: schemas.Aluno = Depends(auth.get_current_aluno)
+    current_aluno: models.Aluno = Depends(auth.get_current_aluno)
 ):
     """
-    Calcula e retorna uma lista de professores ranqueados 
-    por similaridade de cossenos com as preferências do aluno logado.
+    Calcula e retorna professores ranqueados por similaridade
+    FILTRADOS pela disciplina fornecida.
     """
     
-    # --- 1. OBTER O VETOR DO ALUNO (VETOR A) ---
-    
+    # 1. OBTER O VETOR DO ALUNO (VETOR A)
     perfil = crud.get_perfil_completo_by_aluno_id(db, aluno_id=current_aluno.id_aluno)
     
     if not perfil or not perfil.preferencias:
@@ -93,40 +99,33 @@ def get_recomendacoes(
             detail="Perfil de preferências não encontrado. Por favor, preencha suas preferências primeiro."
         )
 
-    # Converte as preferências do banco em um dicionário
-    # (Ex: {'slide': 7, 'quadro': 2, 'provas': 5, ...})
     preferencias_dict = {
         pref.opcao.coluna_mapeada: pref.peso 
         for pref in perfil.preferencias
     }
     
-    # Converte o dicionário em um vetor numpy na ORDEM CORRETA
-    # (Ex: [7, 2, 0, 5, 0, 0, 0])
     aluno_vector = np.array([
         preferencias_dict.get(feature, 0) for feature in FEATURE_NAMES
     ])
 
-    # --- 2. OBTER OS VETORES DOS PROFESSORES (VETORES B) ---
+    # OBTER OS VETORES DOS PROFESSORES (VETORES B)
     
-    # Busca as médias de todos os professores
-    prof_ratings_list = crud.get_all_professores_avg_ratings(db)
+    # Busca as médias filtrando pela disciplina
+    prof_ratings_list = crud.get_professores_avg_ratings_by_disciplina(
+        db, disciplina_id=disciplina_id
+    )
     
     if not prof_ratings_list:
-        return [] # Retorna lista vazia se nenhum professor foi avaliado
+        return [] 
 
     resultados = []
     
-    # --- 3. CALCULAR A SIMILARIDADE ---
-
+    # 3. CALCULAR A SIMILARIDADE 
     for prof_data in prof_ratings_list:
-        # prof_data é um objeto com (id_professor, nome, avg_slide, avg_quadro, ...)
-        
-        # Converte as médias do professor em um vetor numpy na MESMA ORDEM
         prof_vector = np.array([
             getattr(prof_data, f"avg_{feature}", 0) for feature in FEATURE_NAMES
         ])
         
-        # Calcula a similaridade
         similaridade = calculate_cosine_similarity(aluno_vector, prof_vector)
         
         resultados.append({
@@ -135,9 +134,7 @@ def get_recomendacoes(
             "similaridade": similaridade
         })
 
-    # --- 4. RANQUEAR E RETORNAR ---
-    
-    # Ordena a lista pela similaridade, da maior para a menor
+    # 4. RANQUEAR E RETORNAR 
     resultados_ordenados = sorted(
         resultados, 
         key=lambda x: x['similaridade'], 

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 class AlunoBase(BaseModel):
     
@@ -34,7 +35,6 @@ class LoginRequest(BaseModel):
     senha: str
 
 class PerfilFrontend(BaseModel):
-    # 'curso' e 'periodo' não são usados no vetor, mas é bom receber
     curso: str
     periodo: str
     
@@ -50,10 +50,17 @@ class PerfilFrontend(BaseModel):
     ritmoAulaImportancia: int
     incentivoImportancia: int
 
+class OpcaoSchemaHelper(BaseModel):
+    id_opcao: int
+    nome: str
+    coluna_mapeada: str
+    
+    class Config:
+        from_attributes = True
 
 class PreferenciaItem(BaseModel):
     id_preferencia: int
-    coluna: str
+    opcao: OpcaoSchemaHelper
     peso: int
     
     class Config:
@@ -61,6 +68,7 @@ class PreferenciaItem(BaseModel):
 
 
 class PerfilPreferencias(BaseModel):
+    #resposta da rota /recomendaoes
     id_perfil: int
     aluno_id: int
     preferencias: list[PreferenciaItem]
@@ -73,3 +81,13 @@ class ProfessorComSimilaridade(BaseModel):
     id_professor: int
     nome: str
     similaridade: float
+
+    class Config:
+        from_attributes = True
+
+class Disciplina(BaseModel):
+    id_disciplina: int
+    nome: str
+    
+    class Config:
+        from_attributes = True
