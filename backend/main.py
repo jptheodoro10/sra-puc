@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from routers import auth_router as auth_router
 from routers import aluno_routes as aluno_router
+from routers import professor_routes as prof_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()

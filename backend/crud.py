@@ -156,3 +156,20 @@ def get_professores_avg_ratings_by_disciplina(db: Session, disciplina_id: int):
     ).group_by(
         models.Professor.id_professor, models.Professor.nome
     ).all()
+
+# ----------------------------------
+
+def get_media_professor(db: Session, prof_id: int):
+    result = db.query(
+        func.avg(models.AvaliacaoProfessor.slide).label("slide"),
+        func.avg(models.AvaliacaoProfessor.quadro).label("quadro"),
+        func.avg(models.AvaliacaoProfessor.velocidade_aula).label("velocidade_aula"),
+        func.avg(models.AvaliacaoProfessor.provas).label("provas"),
+        func.avg(models.AvaliacaoProfessor.trabalhos).label("trabalhos"),
+        func.avg(models.AvaliacaoProfessor.projetos).label("projetos"),
+        func.avg(models.AvaliacaoProfessor.interacao).label("interacao"),
+    ).filter(
+        models.AvaliacaoProfessor.id_professor == prof_id
+    ).first()
+
+    return result

@@ -142,3 +142,33 @@ def get_recomendacoes(
     )
     
     return resultados_ordenados
+
+# --------------------------------
+
+@router.get("/prof_media/{prof_id}")
+def aluno_ver_media_professor(
+    prof_id: int,
+    db: Session = Depends(get_db),
+    current_aluno = Depends(auth.get_current_aluno)
+):
+    """
+    Rota do aluno que usa a lógica da rota /prof/media,
+    mas sem fazer request HTTP — chama a função Python direto.
+    """
+    media = crud.get_media_professor(db, prof_id)
+
+    if not media:
+        raise HTTPException(status_code=404, detail="Professor não encontrado.")
+
+    return {
+        "professor_id": prof_id,
+        "media": {
+            "slide": media.slide,
+            "quadro": media.quadro,
+            "velocidade_aula": media.velocidade_aula,
+            "provas": media.provas,
+            "trabalhos": media.trabalhos,
+            "projetos": media.projetos,
+            "interacao": media.interacao
+        }
+    }
