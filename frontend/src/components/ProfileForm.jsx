@@ -9,11 +9,12 @@ import {
   useTheme,
 } from "@mui/material";
 import SelectField from "./SelectField";
-import logoPUC from "../img/logoPUC.png";
+import { useNavigate } from "react-router-dom";
 
 const ProfileForm = (props) => {
   const theme = useTheme();
   const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     curso: "",
     periodo: "",
@@ -58,7 +59,7 @@ const ProfileForm = (props) => {
         throw new Error(errData.detail || "Erro ao salvar perfil.");
       }
 
-      navigate("/dashboard");
+      navigate("/recomendacoes");
     } catch (err) {
       console.error("Erro ao salvar perfil:", err);
       setError(err.message || "Ocorreu um erro. Tente novamente.");

@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session, joinedload
 import models
 import schemas
 from sqlalchemy import func
+from constants.features import FEATURE_NAMES
+
 
 
 def get_aluno_by_id(db: Session, aluno_id: int):
@@ -113,16 +115,10 @@ def create_or_update_aluno_perfil(
 
 
 
-# Esta lista define o "espaço vetorial" da comparação
-FEATURE_NAMES = [
-    'slide', 'quadro', 'velocidade_aula',
-    'provas', 'trabalhos', 'projetos', 'interacao'
-]
 
 def get_perfil_completo_by_aluno_id(db: Session, aluno_id: int):
     """
-    Busca o perfil do aluno e já carrega (eager load)
-    as preferências e as opções associadas.
+    Busca o perfil do aluno e carrega as preferências e as opções associadas.
     Essencial para construir o "vetor do aluno".
     """
     return db.query(models.PerfilPreferencias)\
@@ -133,7 +129,6 @@ def get_perfil_completo_by_aluno_id(db: Session, aluno_id: int):
              ).first()
 
 def get_disciplinas(db: Session):
-    """Retorna todas as disciplinas cadastradas."""
     return db.query(models.Disciplina).all()
 
 
@@ -151,7 +146,7 @@ def get_professores_avg_ratings_by_disciplina(db: Session, disciplina_id: int):
         models.Turma, models.Professor.id_professor == models.Turma.professor_id
     ).join(
         models.Avaliacao, models.Turma.id_turma == models.Avaliacao.turma_id
-    ).filter( # --- FILTRO ADICIONADO ---
+    ).filter( 
         models.Turma.disciplina_id == disciplina_id
     ).group_by(
         models.Professor.id_professor, models.Professor.nome

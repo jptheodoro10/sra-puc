@@ -6,6 +6,8 @@ import models
 from sqlalchemy.orm import Session
 from database import get_db
 import numpy as np
+from constants.features import FEATURE_NAMES
+
 
 router= APIRouter(
     prefix="/aluno", 
@@ -14,13 +16,6 @@ router= APIRouter(
 )
 
 
-
-
-# Esta lista DEVE ser idêntica à do crud.py
-FEATURE_NAMES = [
-    'slide', 'quadro', 'velocidade_aula', 
-    'provas', 'trabalhos', 'projetos', 'interacao'
-]
 
 def calculate_cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
     """Calcula a similaridade de cossenos entre dois vetores."""
@@ -37,7 +32,6 @@ def calculate_cosine_similarity(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
 # todas as rotas abaixo estão protegidas, nao precisa de Depends(get_current aluno) pois colocamos no router
 
 #rota que salva o perfil:
-
 @router.post("/me/perfil", response_model=schemas.PerfilPreferencias)
 def salvar_perfil_aluno(
     perfil_data: schemas.PerfilFrontend, # Recebe o schema do frontend
@@ -108,7 +102,7 @@ def get_recomendacoes(
         preferencias_dict.get(feature, 0) for feature in FEATURE_NAMES
     ])
 
-    # OBTER OS VETORES DOS PROFESSORES (VETORES B)
+    # 2.OBTER OS VETORES DOS PROFESSORES (VETORES B)
     
     # Busca as médias filtrando pela disciplina
     prof_ratings_list = crud.get_professores_avg_ratings_by_disciplina(
@@ -123,7 +117,7 @@ def get_recomendacoes(
     # 3. CALCULAR A SIMILARIDADE 
     for prof_data in prof_ratings_list:
         prof_vector = np.array([
-            getattr(prof_data, f"avg_{feature}", 0) for feature in FEATURE_NAMES
+            float(getattr(prof_data, f"avg_{feature}", 0) or 0) for feature in FEATURE_NAMES
         ])
         
         similaridade = calculate_cosine_similarity(aluno_vector, prof_vector)
@@ -133,6 +127,7 @@ def get_recomendacoes(
             "nome": prof_data.nome,
             "similaridade": similaridade
         })
+   
 
     # 4. RANQUEAR E RETORNAR 
     resultados_ordenados = sorted(
@@ -140,5 +135,8 @@ def get_recomendacoes(
         key=lambda x: x['similaridade'], 
         reverse=True
     )
-    
+
+    for p in resultados_ordenados:
+        print(p)
+
     return resultados_ordenados

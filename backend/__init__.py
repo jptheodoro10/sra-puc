@@ -4,9 +4,6 @@ import models
 import auth   
 
 def seed_data(db: Session):
-    """
-    Popula o banco de dados com metadados (dados inciias essenciais) e alguns dados de simulação.
-    """
     
     #  verificar se metadados ja existem:
     if db.query(models.TipoPreferencia).first() is not None:
@@ -65,8 +62,20 @@ def seed_data(db: Session):
             matricula="2110003",                   
             hashed_password=sim_password_hash      
         )
+
+        aluno_Veeck = models.Aluno(
+            nome = "Felipe Veeck",
+            matricula= "2110004",
+            hashed_password = sim_password_hash
+        )
         
-        # avaliações 
+        aluno_Python = models.Aluno(
+            nome = "Vitor Python",
+            matricula= "2110005",
+            hashed_password = sim_password_hash
+        )
+        
+        # avaliações simuladas
         aval1_adriano = models.Avaliacao(aluno=aluno_maria, turma=turma_adriano, semestre="2025.1", slide=7, quadro=2, velocidade_aula=6, provas=4, trabalhos=5, projetos=5, interacao=5)
         aval2_adriano = models.Avaliacao(aluno=aluno_pedro, turma=turma_adriano, semestre="2025.1", slide=6, quadro=3, velocidade_aula=7, provas=5, trabalhos=5, projetos=5, interacao=6)
         aval1_carla = models.Avaliacao(aluno=aluno_maria, turma=turma_carla, semestre="2025.1", slide=2, quadro=7, velocidade_aula=4, provas=6, trabalhos=5, projetos=5, interacao=7)
@@ -74,7 +83,7 @@ def seed_data(db: Session):
         
         db.add_all([
             curso_es, disc_bd, prof_adriano, prof_carla, turma_adriano, turma_carla,
-            aluno_joao, aluno_maria, aluno_pedro,
+            aluno_joao, aluno_maria, aluno_pedro, aluno_Veeck, aluno_Python,
             aval1_adriano, aval2_adriano, aval1_carla, aval2_carla
         ])
         

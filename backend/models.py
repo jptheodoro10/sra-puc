@@ -95,10 +95,7 @@ class Avaliacao(Base):
     )
 
 class TipoPreferencia(Base):
-    """
-    (Da imagem) A "categoria" da preferência.
-    Ex: "Forma de Lecionar", "Método Avaliativo"
-    """
+   
     __tablename__ = 'tipos_preferencia'
     id_tipo = Column(Integer, primary_key=True)
     nome = Column(String(100), nullable=False, unique=True)

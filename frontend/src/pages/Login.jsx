@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header.jsx";
 import {
   Box,
@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import logoSRA from "../img/logo_SRA.png";
-import LogoSRAESCURA from "../img/LOGO_SRA_ESCURA.png";
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -58,18 +57,14 @@ const Login = () => {
       console.log("Resposta do backend:", userData);
       // Ex: userData pode ser { id: 1, nome: "Fulano de Tal", ... }
       localStorage.setItem("authToken", userData.access_token);
-      const nomeDoUsuario = userData.nome;
       localStorage.setItem("userName", userData.nome);
 
-      // --- 4. Navegue programaticamente com o nome ---
-      // (Assumindo que sua rota é /TelaInicial/:name)
-      // (Se sua rota mudou para /Preferencias/:name, apenas ajuste)
-
+      // 4. Navegar com o nome
       if (userData.has_profile === false) {
         navigate("/Preferencias");
       } else {
         // Se ele JÁ tem perfil, vai direto para o dashboard
-        navigate("/dashboard");
+        navigate("/recomendacoes");
       }
     } catch (error) {
       console.error("Erro no login:", error);
@@ -204,9 +199,9 @@ const Login = () => {
                 mt: 0,
                 py: 1,
                 fontSize: "1rem",
-                paddingLeft: 8,
-                paddingRight: 8,
-                marginLeft: 5,
+                paddingLeft: 6,
+                paddingRight: 6,
+                marginLeft: 4,
               }}
             >
               Efetuar Login
