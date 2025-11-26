@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header.jsx";
 import {
   Box,
@@ -12,14 +12,13 @@ import {
   Link,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import logoSRA from "../img/logo_SRA.png";
-import LogoSRAESCURA from "../img/LOGO_SRA_ESCURA.png";
+import { colors } from "../constants/recommendationColors.js";
 
 const Login = () => {
   const [form, setForm] = useState({
     matricula: "",
     senha: "",
-    tipo: "aluno",
+    tipo: "aluno", // nosso mvp so contempla alunos
   });
 
   const navigate = useNavigate();
@@ -29,29 +28,24 @@ const Login = () => {
   };
 
   const isValid =
-    form.matricula.trim().length > 0 &&
-    form.senha.trim().length > 0 &&
-    ["aluno", "professor", "funcionario"].includes(form.tipo);
+    form.matricula.trim().length > 0 && form.senha.trim().length > 0;
 
   const onSubmit = async (e) => {
     e.preventDefault();
     if (!isValid) return;
     setLoginError("");
+
     try {
       // --- 2. Chame sua API do FastAPI ---
       // (Substitua pela URL e lógica da sua API real)
-      const response = await fetch(
-        "http://localhost:8000/seu-endpoint-de-login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            matricula: form.matricula,
-            senha: form.senha,
-            tipo: form.tipo,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matricula: form.matricula,
+          senha: form.senha,
+        }),
+      });
 
       if (!response.ok) {
         // Se o login falhar (ex: 401 Senha errada)
@@ -60,15 +54,18 @@ const Login = () => {
 
       // --- 3. Pegue os dados do usuário da resposta ---
       const userData = await response.json();
+      console.log("Resposta do backend:", userData);
       // Ex: userData pode ser { id: 1, nome: "Fulano de Tal", ... }
+      localStorage.setItem("authToken", userData.access_token);
+      localStorage.setItem("userName", userData.nome);
 
-      const nomeDoUsuario = userData.nome; // <-- Pegue o nome que veio do banco!
-
-      // --- 4. Navegue programaticamente com o nome ---
-      // (Assumindo que sua rota é /TelaInicial/:name)
-      // (Se sua rota mudou para /Preferencias/:name, apenas ajuste)
-
-      navigate(`/TelaInicial/${nomeDoUsuario}`);
+      // 4. Navegar com o nome
+      if (userData.has_profile === false) {
+        navigate("/Preferencias");
+      } else {
+        // Se ele JÁ tem perfil, vai direto para o dashboard
+        navigate("/recomendacoes");
+      }
     } catch (error) {
       console.error("Erro no login:", error);
       setLoginError(error.message || "Falha ao tentar login.");
@@ -83,7 +80,7 @@ const Login = () => {
         minHeight: "100vh",
         width: "100vw",
         overflowX: "hidden",
-        bgcolor: "#B0B0B0",
+        bgcolor: colors.leftBackground,
       }}
     >
       <Header />
@@ -202,9 +199,9 @@ const Login = () => {
                 mt: 0,
                 py: 1,
                 fontSize: "1rem",
-                paddingLeft: 8,
-                paddingRight: 8,
-                marginLeft: 5,
+                paddingLeft: 6,
+                paddingRight: 6,
+                marginLeft: 4,
               }}
             >
               Efetuar Login
