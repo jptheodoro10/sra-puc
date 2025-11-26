@@ -1,6 +1,6 @@
 # SRA PUC-Rio
 
-Aplicação full-stack (FastAPI + React/Vite). Use bancos separados por ambiente e nunca exponha credenciais reais.
+Projeto do Sistema de Recomendacao Academica para a PUC-RIO. Aplicação full-stack (FastAPI + React/Vite). Use bancos separados por ambiente!
 
 ## Requisitos
 
