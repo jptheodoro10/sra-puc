@@ -1,3 +1,4 @@
+import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -39,10 +40,17 @@ def authenticate_user(db: Session, matricula: str, password: str):
 
 # Token JWT:
 
-# Gerada com 'openssl rand -hex 32'
-SECRET_KEY = "e75a6a2e1e3f11bb9304bdbe86039ef5e2c5071f7ed23855746e12271186704d"
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is not set")
+
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # Token expira em 24 horas
+
+_token_expire_minutes = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+try:
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(_token_expire_minutes) if _token_expire_minutes else 60 * 24  # 24h default
+except ValueError as exc:
+    raise RuntimeError("ACCESS_TOKEN_EXPIRE_MINUTES must be an integer") from exc
 
 
 # diz ao FastAPI que a rota de login é /login

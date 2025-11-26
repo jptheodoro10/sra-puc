@@ -12,7 +12,7 @@ import {
   Link,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import logoSRA from "../img/logo_SRA.png";
+import { colors } from "../constants/recommendationColors.js";
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -80,7 +80,7 @@ const Login = () => {
         minHeight: "100vh",
         width: "100vw",
         overflowX: "hidden",
-        bgcolor: "#B0B0B0",
+        bgcolor: colors.leftBackground,
       }}
     >
       <Header />
