@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Paper, Typography } from "@mui/material";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import StarHalfRoundedIcon from "@mui/icons-material/StarHalfRounded";
 import StarOutlineRoundedIcon from "@mui/icons-material/StarOutlineRounded";
 import { colors } from "../constants/recommendationColors";
 
@@ -10,9 +11,12 @@ const RecommendationCard = ({
   index = 0,
   nome = "",
   especialidade = "",
-  estrelas = 0,
+  estrelas = 0, // valor decimal entre 0 e 5
 }) => {
-  const filledStars = Math.max(0, Math.min(TOTAL_STARS, Math.round(estrelas)));
+  const fullStars = Math.floor(estrelas);
+  const hasHalfStar =
+    estrelas - fullStars >= 0.25 && estrelas - fullStars < 0.75;
+  const emptyStars = TOTAL_STARS - fullStars - (hasHalfStar ? 1 : 0);
 
   return (
     <Paper
@@ -52,26 +56,34 @@ const RecommendationCard = ({
         >
           {nome}
         </Typography>
+
         <Typography
           variant="body2"
           sx={{ color: colors.secondaryTextGray, mb: 1 }}
         >
           Especialista em {especialidade}
         </Typography>
-        <Box sx={{ display: "flex", gap: 0.5 }}>
-          {Array.from({ length: TOTAL_STARS }).map((_, idx) =>
-            idx < filledStars ? (
-              <StarRoundedIcon
-                key={`star-${idx}`}
-                sx={{ color: colors.starGreen, fontSize: 28 }}
-              />
-            ) : (
-              <StarOutlineRoundedIcon
-                key={`star-${idx}`}
-                sx={{ color: colors.starGreen, opacity: 0.3, fontSize: 28 }}
-              />
-            )
+
+        <Box sx={{ display: "flex", gap: 0.4 }}>
+          {[...Array(fullStars)].map((_, i) => (
+            <StarRoundedIcon
+              key={`full-${i}`}
+              sx={{ color: colors.starGreen, fontSize: 28 }}
+            />
+          ))}
+
+          {hasHalfStar && (
+            <StarHalfRoundedIcon
+              sx={{ color: colors.starGreen, fontSize: 28 }}
+            />
           )}
+
+          {[...Array(emptyStars)].map((_, i) => (
+            <StarOutlineRoundedIcon
+              key={`empty-${i}`}
+              sx={{ color: colors.starGreen, opacity: 0.3, fontSize: 28 }}
+            />
+          ))}
         </Box>
       </Box>
     </Paper>

@@ -92,7 +92,18 @@ const RecommendationPage = () => {
   const preparedRecommendations = useMemo(() => {
     return recommendations.slice(0, 5).map((item) => ({
       ...item,
-      estrelas: Math.max(0, Math.round(item.similaridade * 5)),
+      estrelas: Math.max(
+        0,
+        Math.min(
+          5,
+          Math.round(
+            item.estrelas ??
+              (typeof item.similaridade === "number"
+                ? item.similaridade * 5
+                : 0)
+          )
+        )
+      ),
     }));
   }, [recommendations]);
 
@@ -161,7 +172,7 @@ const RecommendationPage = () => {
         width: "100%",
       }}
     >
-      <Header showUserMenu avatarLabel={avatarLabel} />
+      <Header showUserMenu avatarLabel={avatarLabel} showHomeIcon={true} />
 
       <Box
         sx={{

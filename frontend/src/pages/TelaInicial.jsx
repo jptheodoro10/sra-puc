@@ -17,7 +17,7 @@ const TelaInicial = () => {
         bgcolor: "#B0B0B0",
       }}
     >
-      <Header />
+      <Header showHomeIcon={true} />
 
       <Grid
         container
