@@ -1,6 +1,33 @@
 # SRA PUC-Rio
 
-Projeto do Sistema de Recomendacao Academica para a PUC-RIO. Aplicação full-stack (FastAPI + React/Vite). Use bancos separados por ambiente!
+## Visão Geral
+Muitos alunos enfrentam dificuldades ao escolher professores para as disciplinas do semestre: decisões baseadas em avaliações subjetivas, experiências isoladas ou falta de informação consolidada. O SRA-PUC (Sistema de Recomendação Acadêmica) nasce para resolver esse problema.
+O objetivo do sistema é recomendar professores alinhados ao perfil e às preferências do aluno, utilizando dados reais de avaliações acadêmicas. A aplicação combina usabilidade, modelagem de dados e algoritmos de recomendação para entregar uma experiência personalizada e transparente.
+
+## Como funciona
+O SRA-PUC coleta preferências do aluno (forma de lecionar, método avaliativo, ritmo, engajamento, etc.) e compara essas informações com o histórico de avaliações dos professores.
+O algoritmo usa **distância euclidiana ponderada**, permitindo quantificar, de forma objetiva, o quão próximo cada professor está do perfil desejado.
+Em resumo:
+O aluno informa suas preferências.
+O backend processa essas informações, consulta o banco e aplica o algoritmo.
+A interface exibe uma lista ordenada de professores recomendados, do mais compatível ao menos compatível.
+
+## Como funciona internamente (NumPy e vetores)
+Internamente, o SRA-PUC representa as preferências do aluno e os atributos dos professores como vetores NumPy. Cada característica (como uso de slides, método avaliativo ou ritmo da aula) é mapeada para uma posição fixa no vetor.
+<br>O algoritmo funciona assim:
+- As preferências do aluno são convertidas em um vetor NumPy.
+- Cada professor possui seu próprio vetor no mesmo formato, formado pelas avaliacoes feitas sobre ele.
+- Calculamos a distância euclidiana ponderada entre os vetores.
+- Professores cuja distância é menor são considerados mais compatíveis.
+- <br>O uso de NumPy torna o cálculo rápido, consistente e fácil de expandir para novas features.
+
+## Arquitetura da Solução
+A aplicação é full-stack e foi desenvolvida com:
+- **Frontend em React/Vite**, focado em simplicidade e responsividade
+- **Backend em FastAPI (Python)**, responsável por autenticação, CRUDs e recomendação
+- **PostgreSQL** hospedado no Neon, **integrado via SQLAlchemy**
+- **Autenticação JWT**
+- **Algoritmo de recomendação próprio**
 
 ## Requisitos
 
