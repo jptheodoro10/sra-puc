@@ -7,7 +7,6 @@ class AlunoBase(BaseModel):
     nome: str
 
 class Aluno(AlunoBase):
-    #api sempre nao retornando senhas por seguranca..
     id_aluno: int
     
     class Config:
@@ -38,13 +37,11 @@ class PerfilFrontend(BaseModel):
     curso: str
     periodo: str
     
-    # As 4 categorias de preferência
     formaLecionar: str
     formaAvaliar: str
     ritmoAula: str
-    incentivo: str # No frontend é 'incentivo', no form é 'Participação'
+    incentivo: str 
     
-    # As 4 importâncias
     formaLecionarImportancia: int
     formaAvaliarImportancia: int
     ritmoAulaImportancia: int
@@ -81,6 +78,7 @@ class ProfessorComSimilaridade(BaseModel):
     id_professor: int
     nome: str
     similaridade: float
+    estrelas: float
 
     class Config:
         from_attributes = True

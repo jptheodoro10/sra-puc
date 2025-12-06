@@ -5,9 +5,16 @@ import SRALogo from "../img/logo_SRA.png";
 import logoPUC from "../img/logoPUC.png";
 import { colors } from "../constants/recommendationColors";
 import DefaultAvatar from "../img/defaultAvatar.svg";
+import HomeIcon from "@mui/icons-material/Home";
+import { useNavigate } from "react-router-dom";
 
-const Header = ({ avatarLabel = "AL", showUserMenu = false }) => {
+const Header = ({
+  avatarLabel = "AL",
+  showUserMenu = false,
+  showHomeIcon = false,
+}) => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
     <Box
@@ -24,6 +31,19 @@ const Header = ({ avatarLabel = "AL", showUserMenu = false }) => {
         py: 1.5,
       }}
     >
+      {showHomeIcon && (
+        <HomeIcon
+          onClick={() => navigate("/")}
+          style={{
+            color: "white",
+            fontSize: 40,
+            marginLeft: -10,
+            marginRight: 10,
+            cursor: "pointer",
+          }}
+        />
+      )}
+
       <Box
         sx={{
           display: "flex",

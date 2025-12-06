@@ -1,4 +1,4 @@
-# Environment files (never commit real secrets)
+# Environment files 
 .env
 backend/.env
 frontend/.env
